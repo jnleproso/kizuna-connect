@@ -13,6 +13,7 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthedSettingsRouteImport } from './routes/_authed.settings'
 import { Route as AuthedFeedRouteImport } from './routes/_authed.feed'
 import { Route as AuthedDiscoverRouteImport } from './routes/_authed.discover'
 import { Route as AuthedGroupsIndexRouteImport } from './routes/_authed.groups.index'
@@ -38,6 +39,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthedSettingsRoute = AuthedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthedRoute,
 } as any)
 const AuthedFeedRoute = AuthedFeedRouteImport.update({
   id: '/feed',
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/discover': typeof AuthedDiscoverRoute
   '/feed': typeof AuthedFeedRoute
+  '/settings': typeof AuthedSettingsRoute
   '/groups/$slug': typeof AuthedGroupsSlugRoute
   '/groups/new': typeof AuthedGroupsNewRoute
   '/profile/$username': typeof AuthedProfileUsernameRoute
@@ -87,6 +94,7 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/discover': typeof AuthedDiscoverRoute
   '/feed': typeof AuthedFeedRoute
+  '/settings': typeof AuthedSettingsRoute
   '/groups/$slug': typeof AuthedGroupsSlugRoute
   '/groups/new': typeof AuthedGroupsNewRoute
   '/profile/$username': typeof AuthedProfileUsernameRoute
@@ -100,6 +108,7 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/_authed/discover': typeof AuthedDiscoverRoute
   '/_authed/feed': typeof AuthedFeedRoute
+  '/_authed/settings': typeof AuthedSettingsRoute
   '/_authed/groups/$slug': typeof AuthedGroupsSlugRoute
   '/_authed/groups/new': typeof AuthedGroupsNewRoute
   '/_authed/profile/$username': typeof AuthedProfileUsernameRoute
@@ -113,6 +122,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/discover'
     | '/feed'
+    | '/settings'
     | '/groups/$slug'
     | '/groups/new'
     | '/profile/$username'
@@ -124,6 +134,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/discover'
     | '/feed'
+    | '/settings'
     | '/groups/$slug'
     | '/groups/new'
     | '/profile/$username'
@@ -136,6 +147,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/_authed/discover'
     | '/_authed/feed'
+    | '/_authed/settings'
     | '/_authed/groups/$slug'
     | '/_authed/groups/new'
     | '/_authed/profile/$username'
@@ -178,6 +190,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authed/settings': {
+      id: '/_authed/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthedSettingsRouteImport
+      parentRoute: typeof AuthedRoute
     }
     '/_authed/feed': {
       id: '/_authed/feed'
@@ -227,6 +246,7 @@ declare module '@tanstack/react-router' {
 interface AuthedRouteChildren {
   AuthedDiscoverRoute: typeof AuthedDiscoverRoute
   AuthedFeedRoute: typeof AuthedFeedRoute
+  AuthedSettingsRoute: typeof AuthedSettingsRoute
   AuthedGroupsSlugRoute: typeof AuthedGroupsSlugRoute
   AuthedGroupsNewRoute: typeof AuthedGroupsNewRoute
   AuthedProfileUsernameRoute: typeof AuthedProfileUsernameRoute
@@ -236,6 +256,7 @@ interface AuthedRouteChildren {
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedDiscoverRoute: AuthedDiscoverRoute,
   AuthedFeedRoute: AuthedFeedRoute,
+  AuthedSettingsRoute: AuthedSettingsRoute,
   AuthedGroupsSlugRoute: AuthedGroupsSlugRoute,
   AuthedGroupsNewRoute: AuthedGroupsNewRoute,
   AuthedProfileUsernameRoute: AuthedProfileUsernameRoute,
