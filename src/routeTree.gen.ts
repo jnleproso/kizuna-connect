@@ -9,38 +9,181 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RegisterRouteImport } from './routes/register'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthedSettingsRouteImport } from './routes/_authed.settings'
+import { Route as AuthedFeedRouteImport } from './routes/_authed.feed'
+import { Route as AuthedDiscoverRouteImport } from './routes/_authed.discover'
+import { Route as AuthedGroupsIndexRouteImport } from './routes/_authed.groups.index'
+import { Route as AuthedProfileUsernameRouteImport } from './routes/_authed.profile.$username'
+import { Route as AuthedGroupsNewRouteImport } from './routes/_authed.groups.new'
+import { Route as AuthedGroupsSlugRouteImport } from './routes/_authed.groups.$slug'
 
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthedRoute = AuthedRouteImport.update({
+  id: '/_authed',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthedSettingsRoute = AuthedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedFeedRoute = AuthedFeedRouteImport.update({
+  id: '/feed',
+  path: '/feed',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedDiscoverRoute = AuthedDiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedGroupsIndexRoute = AuthedGroupsIndexRouteImport.update({
+  id: '/groups/',
+  path: '/groups/',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedProfileUsernameRoute = AuthedProfileUsernameRouteImport.update({
+  id: '/profile/$username',
+  path: '/profile/$username',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedGroupsNewRoute = AuthedGroupsNewRouteImport.update({
+  id: '/groups/new',
+  path: '/groups/new',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedGroupsSlugRoute = AuthedGroupsSlugRouteImport.update({
+  id: '/groups/$slug',
+  path: '/groups/$slug',
+  getParentRoute: () => AuthedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/discover': typeof AuthedDiscoverRoute
+  '/feed': typeof AuthedFeedRoute
+  '/settings': typeof AuthedSettingsRoute
+  '/groups/$slug': typeof AuthedGroupsSlugRoute
+  '/groups/new': typeof AuthedGroupsNewRoute
+  '/profile/$username': typeof AuthedProfileUsernameRoute
+  '/groups/': typeof AuthedGroupsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/discover': typeof AuthedDiscoverRoute
+  '/feed': typeof AuthedFeedRoute
+  '/settings': typeof AuthedSettingsRoute
+  '/groups/$slug': typeof AuthedGroupsSlugRoute
+  '/groups/new': typeof AuthedGroupsNewRoute
+  '/profile/$username': typeof AuthedProfileUsernameRoute
+  '/groups': typeof AuthedGroupsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authed': typeof AuthedRouteWithChildren
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/_authed/discover': typeof AuthedDiscoverRoute
+  '/_authed/feed': typeof AuthedFeedRoute
+  '/_authed/settings': typeof AuthedSettingsRoute
+  '/_authed/groups/$slug': typeof AuthedGroupsSlugRoute
+  '/_authed/groups/new': typeof AuthedGroupsNewRoute
+  '/_authed/profile/$username': typeof AuthedProfileUsernameRoute
+  '/_authed/groups/': typeof AuthedGroupsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/register'
+    | '/discover'
+    | '/feed'
+    | '/settings'
+    | '/groups/$slug'
+    | '/groups/new'
+    | '/profile/$username'
+    | '/groups/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/login'
+    | '/register'
+    | '/discover'
+    | '/feed'
+    | '/settings'
+    | '/groups/$slug'
+    | '/groups/new'
+    | '/profile/$username'
+    | '/groups'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authed'
+    | '/login'
+    | '/register'
+    | '/_authed/discover'
+    | '/_authed/feed'
+    | '/_authed/settings'
+    | '/_authed/groups/$slug'
+    | '/_authed/groups/new'
+    | '/_authed/profile/$username'
+    | '/_authed/groups/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthedRoute: typeof AuthedRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authed': {
+      id: '/_authed'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +191,87 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authed/settings': {
+      id: '/_authed/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthedSettingsRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/feed': {
+      id: '/_authed/feed'
+      path: '/feed'
+      fullPath: '/feed'
+      preLoaderRoute: typeof AuthedFeedRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/discover': {
+      id: '/_authed/discover'
+      path: '/discover'
+      fullPath: '/discover'
+      preLoaderRoute: typeof AuthedDiscoverRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/groups/': {
+      id: '/_authed/groups/'
+      path: '/groups'
+      fullPath: '/groups/'
+      preLoaderRoute: typeof AuthedGroupsIndexRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/profile/$username': {
+      id: '/_authed/profile/$username'
+      path: '/profile/$username'
+      fullPath: '/profile/$username'
+      preLoaderRoute: typeof AuthedProfileUsernameRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/groups/new': {
+      id: '/_authed/groups/new'
+      path: '/groups/new'
+      fullPath: '/groups/new'
+      preLoaderRoute: typeof AuthedGroupsNewRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/groups/$slug': {
+      id: '/_authed/groups/$slug'
+      path: '/groups/$slug'
+      fullPath: '/groups/$slug'
+      preLoaderRoute: typeof AuthedGroupsSlugRouteImport
+      parentRoute: typeof AuthedRoute
+    }
   }
 }
 
+interface AuthedRouteChildren {
+  AuthedDiscoverRoute: typeof AuthedDiscoverRoute
+  AuthedFeedRoute: typeof AuthedFeedRoute
+  AuthedSettingsRoute: typeof AuthedSettingsRoute
+  AuthedGroupsSlugRoute: typeof AuthedGroupsSlugRoute
+  AuthedGroupsNewRoute: typeof AuthedGroupsNewRoute
+  AuthedProfileUsernameRoute: typeof AuthedProfileUsernameRoute
+  AuthedGroupsIndexRoute: typeof AuthedGroupsIndexRoute
+}
+
+const AuthedRouteChildren: AuthedRouteChildren = {
+  AuthedDiscoverRoute: AuthedDiscoverRoute,
+  AuthedFeedRoute: AuthedFeedRoute,
+  AuthedSettingsRoute: AuthedSettingsRoute,
+  AuthedGroupsSlugRoute: AuthedGroupsSlugRoute,
+  AuthedGroupsNewRoute: AuthedGroupsNewRoute,
+  AuthedProfileUsernameRoute: AuthedProfileUsernameRoute,
+  AuthedGroupsIndexRoute: AuthedGroupsIndexRoute,
+}
+
+const AuthedRouteWithChildren =
+  AuthedRoute._addFileChildren(AuthedRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthedRoute: AuthedRouteWithChildren,
+  LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
