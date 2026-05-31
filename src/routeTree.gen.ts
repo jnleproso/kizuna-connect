@@ -17,6 +17,7 @@ import { Route as AuthedFeedRouteImport } from './routes/_authed.feed'
 import { Route as AuthedDiscoverRouteImport } from './routes/_authed.discover'
 import { Route as AuthedGroupsIndexRouteImport } from './routes/_authed.groups.index'
 import { Route as AuthedGroupsNewRouteImport } from './routes/_authed.groups.new'
+import { Route as AuthedGroupsSlugRouteImport } from './routes/_authed.groups.$slug'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -57,6 +58,11 @@ const AuthedGroupsNewRoute = AuthedGroupsNewRouteImport.update({
   path: '/groups/new',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedGroupsSlugRoute = AuthedGroupsSlugRouteImport.update({
+  id: '/groups/$slug',
+  path: '/groups/$slug',
+  getParentRoute: () => AuthedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/discover': typeof AuthedDiscoverRoute
   '/feed': typeof AuthedFeedRoute
+  '/groups/$slug': typeof AuthedGroupsSlugRoute
   '/groups/new': typeof AuthedGroupsNewRoute
   '/groups/': typeof AuthedGroupsIndexRoute
 }
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/discover': typeof AuthedDiscoverRoute
   '/feed': typeof AuthedFeedRoute
+  '/groups/$slug': typeof AuthedGroupsSlugRoute
   '/groups/new': typeof AuthedGroupsNewRoute
   '/groups': typeof AuthedGroupsIndexRoute
 }
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/_authed/discover': typeof AuthedDiscoverRoute
   '/_authed/feed': typeof AuthedFeedRoute
+  '/_authed/groups/$slug': typeof AuthedGroupsSlugRoute
   '/_authed/groups/new': typeof AuthedGroupsNewRoute
   '/_authed/groups/': typeof AuthedGroupsIndexRoute
 }
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/discover'
     | '/feed'
+    | '/groups/$slug'
     | '/groups/new'
     | '/groups/'
   fileRoutesByTo: FileRoutesByTo
@@ -104,6 +114,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/discover'
     | '/feed'
+    | '/groups/$slug'
     | '/groups/new'
     | '/groups'
   id:
@@ -114,6 +125,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/_authed/discover'
     | '/_authed/feed'
+    | '/_authed/groups/$slug'
     | '/_authed/groups/new'
     | '/_authed/groups/'
   fileRoutesById: FileRoutesById
@@ -183,12 +195,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedGroupsNewRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/groups/$slug': {
+      id: '/_authed/groups/$slug'
+      path: '/groups/$slug'
+      fullPath: '/groups/$slug'
+      preLoaderRoute: typeof AuthedGroupsSlugRouteImport
+      parentRoute: typeof AuthedRoute
+    }
   }
 }
 
 interface AuthedRouteChildren {
   AuthedDiscoverRoute: typeof AuthedDiscoverRoute
   AuthedFeedRoute: typeof AuthedFeedRoute
+  AuthedGroupsSlugRoute: typeof AuthedGroupsSlugRoute
   AuthedGroupsNewRoute: typeof AuthedGroupsNewRoute
   AuthedGroupsIndexRoute: typeof AuthedGroupsIndexRoute
 }
@@ -196,6 +216,7 @@ interface AuthedRouteChildren {
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedDiscoverRoute: AuthedDiscoverRoute,
   AuthedFeedRoute: AuthedFeedRoute,
+  AuthedGroupsSlugRoute: AuthedGroupsSlugRoute,
   AuthedGroupsNewRoute: AuthedGroupsNewRoute,
   AuthedGroupsIndexRoute: AuthedGroupsIndexRoute,
 }
