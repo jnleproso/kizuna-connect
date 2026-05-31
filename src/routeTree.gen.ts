@@ -14,6 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthedFeedRouteImport } from './routes/_authed.feed'
+import { Route as AuthedDiscoverRouteImport } from './routes/_authed.discover'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -39,17 +40,24 @@ const AuthedFeedRoute = AuthedFeedRouteImport.update({
   path: '/feed',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedDiscoverRoute = AuthedDiscoverRouteImport.update({
+  id: '/discover',
+  path: '/discover',
+  getParentRoute: () => AuthedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/discover': typeof AuthedDiscoverRoute
   '/feed': typeof AuthedFeedRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/discover': typeof AuthedDiscoverRoute
   '/feed': typeof AuthedFeedRoute
 }
 export interface FileRoutesById {
@@ -58,14 +66,22 @@ export interface FileRoutesById {
   '/_authed': typeof AuthedRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/_authed/discover': typeof AuthedDiscoverRoute
   '/_authed/feed': typeof AuthedFeedRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/register' | '/feed'
+  fullPaths: '/' | '/login' | '/register' | '/discover' | '/feed'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/register' | '/feed'
-  id: '__root__' | '/' | '/_authed' | '/login' | '/register' | '/_authed/feed'
+  to: '/' | '/login' | '/register' | '/discover' | '/feed'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authed'
+    | '/login'
+    | '/register'
+    | '/_authed/discover'
+    | '/_authed/feed'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -112,14 +128,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedFeedRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/discover': {
+      id: '/_authed/discover'
+      path: '/discover'
+      fullPath: '/discover'
+      preLoaderRoute: typeof AuthedDiscoverRouteImport
+      parentRoute: typeof AuthedRoute
+    }
   }
 }
 
 interface AuthedRouteChildren {
+  AuthedDiscoverRoute: typeof AuthedDiscoverRoute
   AuthedFeedRoute: typeof AuthedFeedRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
+  AuthedDiscoverRoute: AuthedDiscoverRoute,
   AuthedFeedRoute: AuthedFeedRoute,
 }
 
