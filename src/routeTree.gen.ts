@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthedFeedRouteImport } from './routes/_authed.feed'
 import { Route as AuthedDiscoverRouteImport } from './routes/_authed.discover'
 import { Route as AuthedGroupsIndexRouteImport } from './routes/_authed.groups.index'
+import { Route as AuthedProfileUsernameRouteImport } from './routes/_authed.profile.$username'
 import { Route as AuthedGroupsNewRouteImport } from './routes/_authed.groups.new'
 import { Route as AuthedGroupsSlugRouteImport } from './routes/_authed.groups.$slug'
 
@@ -53,6 +54,11 @@ const AuthedGroupsIndexRoute = AuthedGroupsIndexRouteImport.update({
   path: '/groups/',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedProfileUsernameRoute = AuthedProfileUsernameRouteImport.update({
+  id: '/profile/$username',
+  path: '/profile/$username',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const AuthedGroupsNewRoute = AuthedGroupsNewRouteImport.update({
   id: '/groups/new',
   path: '/groups/new',
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/feed': typeof AuthedFeedRoute
   '/groups/$slug': typeof AuthedGroupsSlugRoute
   '/groups/new': typeof AuthedGroupsNewRoute
+  '/profile/$username': typeof AuthedProfileUsernameRoute
   '/groups/': typeof AuthedGroupsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/feed': typeof AuthedFeedRoute
   '/groups/$slug': typeof AuthedGroupsSlugRoute
   '/groups/new': typeof AuthedGroupsNewRoute
+  '/profile/$username': typeof AuthedProfileUsernameRoute
   '/groups': typeof AuthedGroupsIndexRoute
 }
 export interface FileRoutesById {
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/_authed/feed': typeof AuthedFeedRoute
   '/_authed/groups/$slug': typeof AuthedGroupsSlugRoute
   '/_authed/groups/new': typeof AuthedGroupsNewRoute
+  '/_authed/profile/$username': typeof AuthedProfileUsernameRoute
   '/_authed/groups/': typeof AuthedGroupsIndexRoute
 }
 export interface FileRouteTypes {
@@ -106,6 +115,7 @@ export interface FileRouteTypes {
     | '/feed'
     | '/groups/$slug'
     | '/groups/new'
+    | '/profile/$username'
     | '/groups/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/feed'
     | '/groups/$slug'
     | '/groups/new'
+    | '/profile/$username'
     | '/groups'
   id:
     | '__root__'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/_authed/feed'
     | '/_authed/groups/$slug'
     | '/_authed/groups/new'
+    | '/_authed/profile/$username'
     | '/_authed/groups/'
   fileRoutesById: FileRoutesById
 }
@@ -188,6 +200,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedGroupsIndexRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/profile/$username': {
+      id: '/_authed/profile/$username'
+      path: '/profile/$username'
+      fullPath: '/profile/$username'
+      preLoaderRoute: typeof AuthedProfileUsernameRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/groups/new': {
       id: '/_authed/groups/new'
       path: '/groups/new'
@@ -210,6 +229,7 @@ interface AuthedRouteChildren {
   AuthedFeedRoute: typeof AuthedFeedRoute
   AuthedGroupsSlugRoute: typeof AuthedGroupsSlugRoute
   AuthedGroupsNewRoute: typeof AuthedGroupsNewRoute
+  AuthedProfileUsernameRoute: typeof AuthedProfileUsernameRoute
   AuthedGroupsIndexRoute: typeof AuthedGroupsIndexRoute
 }
 
@@ -218,6 +238,7 @@ const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedFeedRoute: AuthedFeedRoute,
   AuthedGroupsSlugRoute: AuthedGroupsSlugRoute,
   AuthedGroupsNewRoute: AuthedGroupsNewRoute,
+  AuthedProfileUsernameRoute: AuthedProfileUsernameRoute,
   AuthedGroupsIndexRoute: AuthedGroupsIndexRoute,
 }
 
