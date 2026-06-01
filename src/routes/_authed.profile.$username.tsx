@@ -9,6 +9,7 @@ import { MapPin, Languages, Settings, MessageSquare, Users as UsersIcon } from "
 import { toast } from "sonner";
 import { registerPeer } from "@/lib/messages";
 import { cn } from "@/lib/utils";
+import { getMockPerson } from "@/lib/mockData";
 
 export const Route = createFileRoute("/_authed/profile/$username")({
   component: Profile,
@@ -29,8 +30,19 @@ function Profile() {
 
   const load = async () => {
     const { data: p } = await supabase.from("profiles").select("*").eq("username", username).maybeSingle();
+    if (!p) {
+      const m = getMockPerson(username);
+      if (m) {
+        setProfile({ ...m, interests: m.interests });
+        setStats({ followers: 128, following: 86 });
+        setUserGroups([]);
+        setFollowers([]);
+        setFollowingList([]);
+        setPosts([]);
+      }
+      return;
+    }
     setProfile(p);
-    if (!p) return;
     setPosts(await fetchPosts({ userId: p.id, viewerId: user?.id }));
     const [{ count: followers }, { count: following }] = await Promise.all([
       supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", p.id),
