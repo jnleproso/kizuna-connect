@@ -14,6 +14,7 @@ interface Props {
     author: MockPerson;
     like_count: number;
     comment_count: number;
+    image_url?: string | null;
   };
 }
 
@@ -57,6 +58,14 @@ export function MockPostCard({ post }: Props) {
             <span className="text-xs text-muted-foreground">· {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
           </div>
           <p className="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed">{post.content}</p>
+          {post.image_url && (
+            <img
+              src={post.image_url}
+              alt=""
+              loading="lazy"
+              className="mt-3 max-h-96 w-full rounded-xl object-cover"
+            />
+          )}
           <div className="mt-3 flex items-center gap-1 text-sm text-muted-foreground">
             <button onClick={toggle} className={cn("flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors hover:bg-secondary", liked && "text-primary")}>
               <Heart className={cn("h-4 w-4", liked && "fill-current")} />
