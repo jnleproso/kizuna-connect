@@ -30,9 +30,11 @@ function seedOnce() {
 }
 seedOnce();
 
-export function subscribeFollows(fn: Listener) {
+export function subscribeFollows(fn: Listener): () => void {
   listeners.add(fn);
-  return () => listeners.delete(fn);
+  return () => {
+    listeners.delete(fn);
+  };
 }
 
 export function myFollowing(): string[] {
