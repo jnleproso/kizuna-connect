@@ -30,13 +30,33 @@ export function getMockPerson(idOrUsername: string): MockPerson | undefined {
 }
 
 export const MOCK_POSTS = [
-  { id: "mock-p-1", author: MOCK_PEOPLE[0], content: "今日は新しい英単語を10個覚えました！🎉 Today I learned 10 new English words! Anyone want to practice together?", created_at: new Date(Date.now() - 1000 * 60 * 15).toISOString(), like_count: 24, comment_count: 5 },
-  { id: "mock-p-2", author: MOCK_PEOPLE[1], content: "Watching Terrace House to improve my Japanese listening. Any other recommendations? 🇯🇵📺", created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), like_count: 41, comment_count: 12 },
-  { id: "mock-p-3", author: MOCK_PEOPLE[4], content: "Just finished reading my first manga in Japanese without a dictionary 📚 Small win but I'll take it!", created_at: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), like_count: 67, comment_count: 8 },
-  { id: "mock-p-4", author: MOCK_PEOPLE[2], content: "Osaka friends! Any English conversation meetups this weekend? 🍻", created_at: new Date(Date.now() - 1000 * 60 * 60 * 9).toISOString(), like_count: 13, comment_count: 4 },
-  { id: "mock-p-5", author: MOCK_PEOPLE[9], content: "Started a daily Japanese journal. Day 7! ✍️ がんばります", created_at: new Date(Date.now() - 1000 * 60 * 60 * 14).toISOString(), like_count: 33, comment_count: 6 },
-  { id: "mock-p-6", author: MOCK_PEOPLE[5], content: "Hosting an online tea ceremony for language exchange next Sunday 🍵 DM me if interested!", created_at: new Date(Date.now() - 1000 * 60 * 60 * 22).toISOString(), like_count: 88, comment_count: 19 },
+  { id: "mock-p-1", author: MOCK_PEOPLE[0], content: "今日は新しい英単語を10個覚えました！🎉 Today I learned 10 new English words! Anyone want to practice together?", image_url: "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=900&q=70", created_at: new Date(Date.now() - 1000 * 60 * 15).toISOString(), like_count: 24, comment_count: 5 },
+  { id: "mock-p-2", author: MOCK_PEOPLE[1], content: "Watching Terrace House to improve my Japanese listening. Any other recommendations? 🇯🇵📺", image_url: null, created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), like_count: 41, comment_count: 12 },
+  { id: "mock-p-3", author: MOCK_PEOPLE[4], content: "Just finished reading my first manga in Japanese without a dictionary 📚 Small win but I'll take it!", image_url: "https://images.unsplash.com/photo-1531501410720-c8d437636169?w=900&q=70", created_at: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(), like_count: 67, comment_count: 8 },
+  { id: "mock-p-4", author: MOCK_PEOPLE[2], content: "Osaka friends! Any English conversation meetups this weekend? 🍻", image_url: "https://images.unsplash.com/photo-1554797589-7241bb691973?w=900&q=70", created_at: new Date(Date.now() - 1000 * 60 * 60 * 9).toISOString(), like_count: 13, comment_count: 4 },
+  { id: "mock-p-5", author: MOCK_PEOPLE[9], content: "Started a daily Japanese journal. Day 7! ✍️ がんばります", image_url: null, created_at: new Date(Date.now() - 1000 * 60 * 60 * 14).toISOString(), like_count: 33, comment_count: 6 },
+  { id: "mock-p-6", author: MOCK_PEOPLE[5], content: "Hosting an online tea ceremony for language exchange next Sunday 🍵 DM me if interested!", image_url: "https://images.unsplash.com/photo-1545048702-79362596cdc9?w=900&q=70", created_at: new Date(Date.now() - 1000 * 60 * 60 * 22).toISOString(), like_count: 88, comment_count: 19 },
 ];
+
+export const SAMPLE_POST_IMAGES = [
+  "https://images.unsplash.com/photo-1480796927426-f609979314bd?w=900&q=70",
+  "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=900&q=70",
+  "https://images.unsplash.com/photo-1542931287-023b922fa89b?w=900&q=70",
+  "https://images.unsplash.com/photo-1526481280693-3bfa7568e0f3?w=900&q=70",
+  "https://images.unsplash.com/photo-1493997181344-712f2f19d87a?w=900&q=70",
+  "https://images.unsplash.com/photo-1554797589-7241bb691973?w=900&q=70",
+  "https://images.unsplash.com/photo-1531501410720-c8d437636169?w=900&q=70",
+  "https://images.unsplash.com/photo-1542223616-740d5dff7f56?w=900&q=70",
+];
+
+// Convention: append an image to a post by adding `\n\n[img]<url>` to the
+// content. Helpers below parse/strip that marker.
+export const IMG_PREFIX = "[img]";
+export function splitPostImage(content: string): { text: string; image: string | null } {
+  const m = content.match(/\n*\[img\](https?:\/\/\S+)\s*$/);
+  if (!m) return { text: content, image: null };
+  return { text: content.slice(0, m.index).trim(), image: m[1] };
+}
 
 export interface MockMessage { id: string; from: string; text: string; at: string }
 export interface MockThreadSeed { peerId: string; messages: MockMessage[] }
