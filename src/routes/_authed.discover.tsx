@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { Avatar } from "@/components/Avatar";
 import { toast } from "sonner";
-import { Search } from "lucide-react";
+import { Search, MessageSquare } from "lucide-react";
+import { MOCK_PEOPLE } from "@/lib/mockData";
 
 export const Route = createFileRoute("/_authed/discover")({
   component: Discover,
@@ -20,7 +21,16 @@ function Discover() {
     let query = supabase.from("profiles").select("id,username,display_name,avatar_url,country,native_language,learning_language,bio").limit(50);
     if (q.trim()) query = query.or(`username.ilike.%${q}%,display_name.ilike.%${q}%,country.ilike.%${q}%`);
     const { data } = await query;
-    setPeople((data || []).filter((p) => p.id !== user?.id));
+    const real = (data || []).filter((p) => p.id !== user?.id);
+    const ql = q.trim().toLowerCase();
+    const mocks = MOCK_PEOPLE.filter((p) =>
+      !ql ||
+      p.username.toLowerCase().includes(ql) ||
+      p.display_name.toLowerCase().includes(ql) ||
+      p.country.toLowerCase().includes(ql) ||
+      p.interests.some((i) => i.toLowerCase().includes(ql)),
+    );
+    setPeople([...real, ...mocks]);
     if (user) {
       const { data: f } = await supabase.from("follows").select("following_id").eq("follower_id", user.id);
       setFollowing(new Set(f?.map((x) => x.following_id) || []));
@@ -33,6 +43,14 @@ function Discover() {
 
   const toggle = async (id: string) => {
     if (!user) return;
+    if (id.startsWith("mock-")) {
+      setFollowing((s) => {
+        const n = new Set(s);
+        n.has(id) ? n.delete(id) : n.add(id);
+        return n;
+      });
+      return;
+    }
     if (following.has(id)) {
       await supabase.from("follows").delete().eq("follower_id", user.id).eq("following_id", id);
       setFollowing((s) => {
@@ -88,17 +106,37 @@ function Discover() {
                 </div>
               )}
               {p.bio && <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{p.bio}</p>}
+              {p.interests?.length > 0 && (
+                <div className="mt-1.5 flex flex-wrap gap-1">
+                  {p.interests.slice(0, 3).map((i: string) => (
+                    <span key={i} className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                      {i}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-            <button
-              onClick={() => toggle(p.id)}
-              className={
-                following.has(p.id)
-                  ? "rounded-lg border px-3 py-1.5 text-xs font-medium"
-                  : "rounded-lg gradient-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-glow"
-              }
-            >
-              {following.has(p.id) ? "Following" : "Follow"}
-            </button>
+            <div className="flex flex-col gap-1.5">
+              <button
+                onClick={() => toggle(p.id)}
+                className={
+                  following.has(p.id)
+                    ? "rounded-lg border px-3 py-1.5 text-xs font-medium"
+                    : "rounded-lg gradient-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-glow"
+                }
+              >
+                {following.has(p.id) ? "Following" : "Follow"}
+              </button>
+              {p.id.startsWith("mock-") && (
+                <Link
+                  to="/messages/$peerId"
+                  params={{ peerId: p.id }}
+                  className="inline-flex items-center justify-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium hover:bg-secondary"
+                >
+                  <MessageSquare className="h-3 w-3" /> Message
+                </Link>
+              )}
+            </div>
           </div>
         ))}
         {people.length === 0 && (
