@@ -5,11 +5,20 @@ import { useAuth } from "@/lib/auth";
 import { fetchPosts } from "@/lib/feed";
 import { PostCard, type FeedPost } from "@/components/PostCard";
 import { Avatar } from "@/components/Avatar";
-import { MapPin, Languages, Settings, MessageSquare, Users as UsersIcon } from "lucide-react";
+import { MapPin, Languages, Settings, MessageSquare, Users as UsersIcon, LogOut, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { registerPeer } from "@/lib/messages";
 import { cn } from "@/lib/utils";
 import { getMockPerson } from "@/lib/mockData";
+import {
+  followerPeople,
+  followingPeople,
+  isFollowingMock,
+  myFollowing,
+  removeFollower,
+  subscribeFollows,
+  toggleFollowMock,
+} from "@/lib/follows";
 
 export const Route = createFileRoute("/_authed/profile/$username")({
   component: Profile,
@@ -17,7 +26,7 @@ export const Route = createFileRoute("/_authed/profile/$username")({
 
 function Profile() {
   const { username } = Route.useParams();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<any>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
@@ -27,6 +36,10 @@ function Profile() {
   const [tab, setTab] = useState<"posts" | "followers" | "following">("posts");
   const [followers, setFollowers] = useState<any[]>([]);
   const [followingList, setFollowingList] = useState<any[]>([]);
+  const [isMock, setIsMock] = useState(false);
+  const [, setTick] = useState(0);
+
+  useEffect(() => subscribeFollows(() => setTick((t) => t + 1)), []);
 
   const load = async () => {
     const { data: p } = await supabase.from("profiles").select("*").eq("username", username).maybeSingle();
@@ -34,38 +47,56 @@ function Profile() {
       const m = getMockPerson(username);
       if (m) {
         setProfile({ ...m, interests: m.interests });
+        setIsMock(true);
         setStats({ followers: 128, following: 86 });
         setUserGroups([]);
         setFollowers([]);
         setFollowingList([]);
+        setIsFollowing(isFollowingMock(m.id));
         setPosts([]);
       }
       return;
     }
+    setIsMock(false);
     setProfile(p);
     setPosts(await fetchPosts({ userId: p.id, viewerId: user?.id }));
-    const [{ count: followers }, { count: following }] = await Promise.all([
+    const [{ count: followersCount }, { count: followingCount }] = await Promise.all([
       supabase.from("follows").select("*", { count: "exact", head: true }).eq("following_id", p.id),
       supabase.from("follows").select("*", { count: "exact", head: true }).eq("follower_id", p.id),
     ]);
-    setStats({ followers: followers || 0, following: following || 0 });
+    const isMe = user?.id === p.id;
+    const mockFollowers = isMe ? followerPeople().length : 0;
+    const mockFollowing = isMe ? followingPeople().length : 0;
+    setStats({
+      followers: (followersCount || 0) + mockFollowers,
+      following: (followingCount || 0) + mockFollowing,
+    });
     if (user) {
       const { data: f } = await supabase.from("follows").select("*").eq("follower_id", user.id).eq("following_id", p.id).maybeSingle();
       setIsFollowing(!!f);
     }
-    // Groups joined
     const { data: gm } = await supabase
       .from("group_members")
       .select("group_id, groups(id,name,slug,category)")
       .eq("user_id", p.id);
     setUserGroups((gm || []).map((m: any) => m.groups).filter(Boolean));
-    // Followers & following lists
-    const [{ data: fr }, { data: fg }] = await Promise.all([
-      supabase.from("follows").select("follower:profiles!follows_follower_id_fkey(id,username,display_name,avatar_url,country)").eq("following_id", p.id),
-      supabase.from("follows").select("following:profiles!follows_following_id_fkey(id,username,display_name,avatar_url,country)").eq("follower_id", p.id),
+    // Followers & following lists (two-step fetch — no FK reliance)
+    const [{ data: frIds }, { data: fgIds }] = await Promise.all([
+      supabase.from("follows").select("follower_id").eq("following_id", p.id),
+      supabase.from("follows").select("following_id").eq("follower_id", p.id),
     ]);
-    setFollowers((fr || []).map((x: any) => x.follower).filter(Boolean));
-    setFollowingList((fg || []).map((x: any) => x.following).filter(Boolean));
+    const frUserIds = (frIds || []).map((r: any) => r.follower_id);
+    const fgUserIds = (fgIds || []).map((r: any) => r.following_id);
+    const [realFollowers, realFollowing] = await Promise.all([
+      frUserIds.length
+        ? supabase.from("profiles").select("id,username,display_name,avatar_url,country").in("id", frUserIds)
+        : Promise.resolve({ data: [] as any[] }),
+      fgUserIds.length
+        ? supabase.from("profiles").select("id,username,display_name,avatar_url,country").in("id", fgUserIds)
+        : Promise.resolve({ data: [] as any[] }),
+    ]);
+    setFollowers([...(isMe ? followerPeople() : []), ...((realFollowers.data || []) as any[])]);
+    setFollowingList([...(isMe ? followingPeople() : []), ...((realFollowing.data || []) as any[])]);
   };
 
   useEffect(() => {
@@ -74,6 +105,11 @@ function Profile() {
 
   const toggle = async () => {
     if (!user || !profile) return;
+    if (isMock) {
+      toggleFollowMock(profile.id);
+      setIsFollowing(isFollowingMock(profile.id));
+      return;
+    }
     if (isFollowing) {
       await supabase.from("follows").delete().eq("follower_id", user.id).eq("following_id", profile.id);
     } else {
@@ -81,6 +117,32 @@ function Profile() {
       if (error) return toast.error(error.message);
     }
     load();
+  };
+
+  const changePhoto = async () => {
+    if (!user) return;
+    const url = window.prompt(
+      "Paste an image URL for your profile photo (leave blank to use a random avatar):",
+      profile?.avatar_url || "",
+    );
+    if (url === null) return;
+    const next = url.trim() || `https://api.dicebear.com/7.x/thumbs/svg?seed=${encodeURIComponent(user.id + Date.now())}`;
+    const { error } = await supabase.from("profiles").update({ avatar_url: next }).eq("id", user.id);
+    if (error) return toast.error(error.message);
+    toast.success("Profile photo updated");
+    load();
+  };
+
+  const unfollow = (id: string, kind: "following" | "followers") => {
+    if (id.startsWith("mock-")) {
+      if (kind === "following") toggleFollowMock(id);
+      else removeFollower(id);
+      load();
+      return;
+    }
+    if (kind === "following" && user) {
+      supabase.from("follows").delete().eq("follower_id", user.id).eq("following_id", id).then(() => load());
+    }
   };
 
   if (!profile) return <div className="py-12 text-center text-sm text-muted-foreground">Loading…</div>;
@@ -102,7 +164,18 @@ function Profile() {
     <div className="mx-auto max-w-2xl space-y-4">
       <div className="rounded-2xl glass p-6 shadow-card">
         <div className="flex items-start gap-4">
-          <Avatar name={profile.display_name || profile.username} src={profile.avatar_url} size={80} />
+          <div className="relative">
+            <Avatar name={profile.display_name || profile.username} src={profile.avatar_url} size={80} />
+            {isMe && (
+              <button
+                onClick={changePhoto}
+                className="absolute -bottom-1 -right-1 grid h-7 w-7 place-items-center rounded-full gradient-primary text-primary-foreground shadow-glow"
+                aria-label="Change photo"
+              >
+                <Camera className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
@@ -111,9 +184,17 @@ function Profile() {
               </div>
               <div className="flex flex-wrap items-center gap-1.5">
                 {isMe ? (
-                  <Link to="/settings" className="inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-medium">
-                    <Settings className="h-3.5 w-3.5" /> Edit
-                  </Link>
+                  <>
+                    <Link to="/settings" className="inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-medium hover:bg-secondary">
+                      <Settings className="h-3.5 w-3.5" /> Edit
+                    </Link>
+                    <button
+                      onClick={async () => { await signOut(); navigate({ to: "/login" }); }}
+                      className="inline-flex items-center gap-1 rounded-xl border px-3 py-1.5 text-xs font-medium hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      <LogOut className="h-3.5 w-3.5" /> Logout
+                    </button>
+                  </>
                 ) : (
                   <>
                     <button
@@ -219,6 +300,8 @@ function Profile() {
           onMessage={messagePeer}
           emptyText={tab === "followers" ? "No followers yet." : "Not following anyone yet."}
           showMessage={isMe}
+          onUnfollow={isMe ? (id) => unfollow(id, tab as "following" | "followers") : undefined}
+          unfollowLabel={tab === "following" ? "Unfollow" : "Remove"}
         />
       )}
     </div>
@@ -230,11 +313,15 @@ function PeopleList({
   onMessage,
   emptyText,
   showMessage,
+  onUnfollow,
+  unfollowLabel,
 }: {
   people: any[];
   onMessage: (p: any) => void;
   emptyText: string;
   showMessage: boolean;
+  onUnfollow?: (id: string) => void;
+  unfollowLabel?: string;
 }) {
   if (people.length === 0) {
     return <div className="rounded-2xl glass p-10 text-center text-sm text-muted-foreground shadow-card">{emptyText}</div>;
@@ -252,14 +339,24 @@ function PeopleList({
             </Link>
             <div className="truncate text-xs text-muted-foreground">@{p.username}{p.country ? ` · ${p.country}` : ""}</div>
           </div>
-          {showMessage && (
-            <button
-              onClick={() => onMessage(p)}
-              className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium hover:bg-secondary"
-            >
-              <MessageSquare className="h-3 w-3" /> Message
-            </button>
-          )}
+          <div className="flex flex-col gap-1">
+            {showMessage && (
+              <button
+                onClick={() => onMessage(p)}
+                className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium hover:bg-secondary"
+              >
+                <MessageSquare className="h-3 w-3" /> Message
+              </button>
+            )}
+            {onUnfollow && (
+              <button
+                onClick={() => onUnfollow(p.id)}
+                className="rounded-lg border px-2.5 py-1.5 text-xs font-medium hover:bg-destructive/10 hover:text-destructive"
+              >
+                {unfollowLabel || "Unfollow"}
+              </button>
+            )}
+          </div>
         </div>
       ))}
     </div>
