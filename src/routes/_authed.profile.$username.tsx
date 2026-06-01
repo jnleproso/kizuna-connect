@@ -39,10 +39,7 @@ function Profile() {
   const [isMock, setIsMock] = useState(false);
   const [, setTick] = useState(0);
 
-  useEffect(() => {
-    const unsub = subscribeFollows(() => setTick((t) => t + 1));
-    return () => { unsub; };
-  }, []);
+  useEffect(() => subscribeFollows(() => setTick((t) => t + 1)), []);
 
   const load = async () => {
     const { data: p } = await supabase.from("profiles").select("*").eq("username", username).maybeSingle();
