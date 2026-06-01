@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { Avatar } from "./Avatar";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import { splitPostImage } from "@/lib/mockData";
 
 export interface FeedPost {
   id: string;
@@ -25,6 +26,7 @@ export function PostCard({ post, onChange }: { post: FeedPost; onChange?: () => 
   const [liked, setLiked] = useState(post.liked_by_me);
   const [count, setCount] = useState(post.like_count);
   const [showComments, setShowComments] = useState(false);
+  const { text, image } = splitPostImage(post.content);
 
   const toggleLike = async () => {
     if (!user) return;
@@ -74,7 +76,10 @@ export function PostCard({ post, onChange }: { post: FeedPost; onChange?: () => 
               in {post.group.name}
             </Link>
           )}
-          <p className="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed">{post.content}</p>
+          <p className="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed">{text}</p>
+          {image && (
+            <img src={image} alt="" loading="lazy" className="mt-3 max-h-96 w-full rounded-xl object-cover" />
+          )}
 
           <div className="mt-3 flex items-center gap-1 text-sm text-muted-foreground">
             <button
