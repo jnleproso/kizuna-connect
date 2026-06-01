@@ -1,10 +1,11 @@
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { Home, Compass, Users, User, LogOut, Sparkles } from "lucide-react";
+import { Home, Compass, Users, User, LogOut, Sparkles, MessageSquare } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar } from "./Avatar";
 import { cn } from "@/lib/utils";
+import { subscribe, totalUnreadHint } from "@/lib/messages";
 
 interface NavItem {
   to: string;
@@ -16,12 +17,20 @@ const NAV: NavItem[] = [
   { to: "/feed", label: "Feed", icon: Home },
   { to: "/discover", label: "Discover", icon: Compass },
   { to: "/groups", label: "Groups", icon: Users },
+  { to: "/messages", label: "Messages", icon: MessageSquare },
 ];
 
 export function AppShell() {
   const { user, signOut } = useAuth();
   const [me, setMe] = useState<{ username: string; display_name: string | null; avatar_url: string | null } | null>(null);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    const refresh = () => setUnread(totalUnreadHint());
+    refresh();
+    return subscribe(refresh);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -57,6 +66,9 @@ export function AppShell() {
                 >
                   <Icon className="h-4 w-4" />
                   {n.label}
+                  {n.to === "/messages" && unread > 0 && (
+                    <span className="ml-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">{unread}</span>
+                  )}
                 </Link>
               );
             })}
@@ -92,19 +104,22 @@ export function AppShell() {
                 key={n.to}
                 to={n.to}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-0.5 rounded-xl px-4 py-2 text-[10px] font-medium transition-all",
+                  "relative flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 text-[10px] font-medium transition-all",
                   active ? "bg-primary text-primary-foreground shadow-glow" : "text-muted-foreground",
                 )}
               >
                 <Icon className="h-5 w-5" />
                 {n.label}
+                {n.to === "/messages" && unread > 0 && (
+                  <span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[9px] font-bold text-primary-foreground ring-2 ring-background">{unread}</span>
+                )}
               </Link>
             );
           })}
           <Link
             to={profileHref}
             className={cn(
-              "flex flex-col items-center justify-center gap-0.5 rounded-xl px-4 py-2 text-[10px] font-medium transition-all",
+              "flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-2 text-[10px] font-medium transition-all",
               pathname.startsWith("/profile") ? "bg-primary text-primary-foreground shadow-glow" : "text-muted-foreground",
             )}
           >

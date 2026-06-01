@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { fetchPosts } from "@/lib/feed";
 import { PostCard, type FeedPost } from "@/components/PostCard";
+import { MockPostCard } from "@/components/MockPostCard";
+import { MOCK_POSTS } from "@/lib/mockData";
 import { Avatar } from "@/components/Avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -66,12 +68,11 @@ function Feed() {
 
       {loading ? (
         <div className="py-12 text-center text-sm text-muted-foreground">Loading feed…</div>
-      ) : posts.length === 0 ? (
-        <div className="rounded-2xl glass p-10 text-center text-sm text-muted-foreground shadow-card">
-          Be the first to share something with the community.
-        </div>
       ) : (
-        posts.map((p) => <PostCard key={p.id} post={p} onChange={load} />)
+        <>
+          {posts.map((p) => <PostCard key={p.id} post={p} onChange={load} />)}
+          {MOCK_POSTS.map((p) => <MockPostCard key={p.id} post={p} />)}
+        </>
       )}
     </div>
   );
