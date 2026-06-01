@@ -16,8 +16,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthedSettingsRouteImport } from './routes/_authed.settings'
 import { Route as AuthedFeedRouteImport } from './routes/_authed.feed'
 import { Route as AuthedDiscoverRouteImport } from './routes/_authed.discover'
+import { Route as AuthedMessagesIndexRouteImport } from './routes/_authed.messages.index'
 import { Route as AuthedGroupsIndexRouteImport } from './routes/_authed.groups.index'
 import { Route as AuthedProfileUsernameRouteImport } from './routes/_authed.profile.$username'
+import { Route as AuthedMessagesPeerIdRouteImport } from './routes/_authed.messages.$peerId'
 import { Route as AuthedGroupsNewRouteImport } from './routes/_authed.groups.new'
 import { Route as AuthedGroupsSlugRouteImport } from './routes/_authed.groups.$slug'
 
@@ -55,6 +57,11 @@ const AuthedDiscoverRoute = AuthedDiscoverRouteImport.update({
   path: '/discover',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedMessagesIndexRoute = AuthedMessagesIndexRouteImport.update({
+  id: '/messages/',
+  path: '/messages/',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const AuthedGroupsIndexRoute = AuthedGroupsIndexRouteImport.update({
   id: '/groups/',
   path: '/groups/',
@@ -63,6 +70,11 @@ const AuthedGroupsIndexRoute = AuthedGroupsIndexRouteImport.update({
 const AuthedProfileUsernameRoute = AuthedProfileUsernameRouteImport.update({
   id: '/profile/$username',
   path: '/profile/$username',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedMessagesPeerIdRoute = AuthedMessagesPeerIdRouteImport.update({
+  id: '/messages/$peerId',
+  path: '/messages/$peerId',
   getParentRoute: () => AuthedRoute,
 } as any)
 const AuthedGroupsNewRoute = AuthedGroupsNewRouteImport.update({
@@ -85,8 +97,10 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthedSettingsRoute
   '/groups/$slug': typeof AuthedGroupsSlugRoute
   '/groups/new': typeof AuthedGroupsNewRoute
+  '/messages/$peerId': typeof AuthedMessagesPeerIdRoute
   '/profile/$username': typeof AuthedProfileUsernameRoute
   '/groups/': typeof AuthedGroupsIndexRoute
+  '/messages/': typeof AuthedMessagesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -97,8 +111,10 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthedSettingsRoute
   '/groups/$slug': typeof AuthedGroupsSlugRoute
   '/groups/new': typeof AuthedGroupsNewRoute
+  '/messages/$peerId': typeof AuthedMessagesPeerIdRoute
   '/profile/$username': typeof AuthedProfileUsernameRoute
   '/groups': typeof AuthedGroupsIndexRoute
+  '/messages': typeof AuthedMessagesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -111,8 +127,10 @@ export interface FileRoutesById {
   '/_authed/settings': typeof AuthedSettingsRoute
   '/_authed/groups/$slug': typeof AuthedGroupsSlugRoute
   '/_authed/groups/new': typeof AuthedGroupsNewRoute
+  '/_authed/messages/$peerId': typeof AuthedMessagesPeerIdRoute
   '/_authed/profile/$username': typeof AuthedProfileUsernameRoute
   '/_authed/groups/': typeof AuthedGroupsIndexRoute
+  '/_authed/messages/': typeof AuthedMessagesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -125,8 +143,10 @@ export interface FileRouteTypes {
     | '/settings'
     | '/groups/$slug'
     | '/groups/new'
+    | '/messages/$peerId'
     | '/profile/$username'
     | '/groups/'
+    | '/messages/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -137,8 +157,10 @@ export interface FileRouteTypes {
     | '/settings'
     | '/groups/$slug'
     | '/groups/new'
+    | '/messages/$peerId'
     | '/profile/$username'
     | '/groups'
+    | '/messages'
   id:
     | '__root__'
     | '/'
@@ -150,8 +172,10 @@ export interface FileRouteTypes {
     | '/_authed/settings'
     | '/_authed/groups/$slug'
     | '/_authed/groups/new'
+    | '/_authed/messages/$peerId'
     | '/_authed/profile/$username'
     | '/_authed/groups/'
+    | '/_authed/messages/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -212,6 +236,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedDiscoverRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/messages/': {
+      id: '/_authed/messages/'
+      path: '/messages'
+      fullPath: '/messages/'
+      preLoaderRoute: typeof AuthedMessagesIndexRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/groups/': {
       id: '/_authed/groups/'
       path: '/groups'
@@ -224,6 +255,13 @@ declare module '@tanstack/react-router' {
       path: '/profile/$username'
       fullPath: '/profile/$username'
       preLoaderRoute: typeof AuthedProfileUsernameRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/messages/$peerId': {
+      id: '/_authed/messages/$peerId'
+      path: '/messages/$peerId'
+      fullPath: '/messages/$peerId'
+      preLoaderRoute: typeof AuthedMessagesPeerIdRouteImport
       parentRoute: typeof AuthedRoute
     }
     '/_authed/groups/new': {
@@ -249,8 +287,10 @@ interface AuthedRouteChildren {
   AuthedSettingsRoute: typeof AuthedSettingsRoute
   AuthedGroupsSlugRoute: typeof AuthedGroupsSlugRoute
   AuthedGroupsNewRoute: typeof AuthedGroupsNewRoute
+  AuthedMessagesPeerIdRoute: typeof AuthedMessagesPeerIdRoute
   AuthedProfileUsernameRoute: typeof AuthedProfileUsernameRoute
   AuthedGroupsIndexRoute: typeof AuthedGroupsIndexRoute
+  AuthedMessagesIndexRoute: typeof AuthedMessagesIndexRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
@@ -259,8 +299,10 @@ const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedSettingsRoute: AuthedSettingsRoute,
   AuthedGroupsSlugRoute: AuthedGroupsSlugRoute,
   AuthedGroupsNewRoute: AuthedGroupsNewRoute,
+  AuthedMessagesPeerIdRoute: AuthedMessagesPeerIdRoute,
   AuthedProfileUsernameRoute: AuthedProfileUsernameRoute,
   AuthedGroupsIndexRoute: AuthedGroupsIndexRoute,
+  AuthedMessagesIndexRoute: AuthedMessagesIndexRoute,
 }
 
 const AuthedRouteWithChildren =
