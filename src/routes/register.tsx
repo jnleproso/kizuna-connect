@@ -17,10 +17,6 @@ function Register() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (user) navigate({ to: "/feed" });
-  }, [user]);
-
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -28,14 +24,14 @@ function Register() {
       email,
       password,
       options: {
-        emailRedirectTo: typeof window !== "undefined" ? window.location.origin + "/feed" : undefined,
         data: { display_name: displayName },
       },
     });
     setLoading(false);
     if (error) return toast.error(error.message);
-    toast.success("Welcome to Otani Circle!");
-    navigate({ to: "/feed" });
+    await supabase.auth.signOut();
+    toast.success("Account created! Please sign in.");
+    navigate({ to: "/login" });
   };
 
   return (
