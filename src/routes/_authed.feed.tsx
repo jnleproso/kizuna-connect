@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { fetchPosts } from "@/lib/feed";
 import { PostCard, type FeedPost } from "@/components/PostCard";
@@ -8,7 +8,7 @@ import { MOCK_POSTS, SAMPLE_POST_IMAGES, IMG_PREFIX } from "@/lib/mockData";
 import { Avatar } from "@/components/Avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ImageIcon, X } from "lucide-react";
+import { ImageIcon, Upload, X } from "lucide-react";
 
 export const Route = createFileRoute("/_authed/feed")({
   component: Feed,
@@ -21,6 +21,8 @@ function Feed() {
   const [loading, setLoading] = useState(true);
   const [image, setImage] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const load = async () => {
     const p = await fetchPosts({ viewerId: user?.id });
@@ -43,6 +45,39 @@ function Feed() {
     setPickerOpen(false);
     toast.success("Posted");
     load();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5 MB");
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
+    setUploading(true);
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `${crypto.randomUUID()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from("post-images").upload(path, file, {
+      contentType: file.type,
+    });
+    if (upErr) {
+      toast.error(upErr.message);
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
+    const { data: signedData, error: signErr } = await supabase.storage.from("post-images").createSignedUrl(path, 315360000);
+    if (signErr || !signedData?.signedUrl) {
+      toast.error(signErr?.message || "Failed to generate image URL");
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
+    setImage(signedData.signedUrl);
+    setPickerOpen(false);
+    setUploading(false);
+    if (fileRef.current) fileRef.current.value = "";
   };
 
   return (
@@ -95,6 +130,21 @@ function Feed() {
                 >
                   <ImageIcon className="h-3.5 w-3.5" /> Photo
                 </button>
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={uploading}
+                  className="inline-flex items-center gap-1 rounded-lg border px-2.5 py-1.5 text-xs font-medium hover:bg-secondary disabled:opacity-40"
+                >
+                  <Upload className="h-3.5 w-3.5" /> {uploading ? "Uploading…" : "Upload"}
+                </button>
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileRef}
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
                 <span>{text.length}/2000</span>
               </div>
               <button
